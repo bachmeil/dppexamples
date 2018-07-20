@@ -1,0 +1,21 @@
+#include "libgretl.h"
+import std.utf;
+
+void main() {
+	gretl_matrix * m = gretl_matrix_alloc(3,2);
+	
+	m.val[0..6] = [1.1, 2.2, 3.3, 4.4, 5.5, 6.6];
+	gretl_matrix_print(m, "Original matrix".toUTFz!(const(char)*));
+	
+	gretl_matrix * mt = gretl_matrix_alloc(2,3);
+	gretl_matrix_transpose(mt, m);
+	gretl_matrix_print(mt, "Transpose of the original matrix".toUTFz!(const(char)*));
+	
+	gretl_matrix * mm = gretl_matrix_alloc(3,3);
+	gretl_matrix_multiply(m, mt, mm);
+	gretl_matrix_print(mm, "Product of the original matrix and its transpose".toUTFz!(const(char)*));
+	
+	gretl_matrix_free(mm);
+	gretl_matrix_free(mt);
+	gretl_matrix_free(m);
+}
