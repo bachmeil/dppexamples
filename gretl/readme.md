@@ -1,6 +1,6 @@
-This examples demonstrates matrix algebra using the [Gretl](http://gretl.sourceforge.net/) library
+This example demonstrates matrix algebra using the [Gretl](http://gretl.sourceforge.net/) library
 
-It does matrix allocation, assigning elements, transposing, and multiplication.
+It does matrix allocation, assigning by index, transposing, and matrix multiplication.
 
 To compile and run:
 
