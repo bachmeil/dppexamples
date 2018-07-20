@@ -1,0 +1,17 @@
+#include <gsl/gsl_poly.h>
+import std.stdio;
+
+void main() {
+  int i;
+  /* coefficients of P(x) =  -1 + x^5  */
+  double[] a = [-1.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+  auto z = new double[10];
+
+  gsl_poly_complex_workspace * w = gsl_poly_complex_workspace_alloc(a.length);
+  gsl_poly_complex_solve(a.ptr, a.length, w, z.ptr);
+  gsl_poly_complex_workspace_free(w);
+
+  foreach(ii; 0..5) {
+    writeln("z", ii, " = ", z[2*ii], "   ", z[2*ii+1]);
+  }
+}
