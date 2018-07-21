@@ -1,0 +1,81 @@
+// I had to pull the values of GSL_SUCCESS and GSL_CONTINUE from
+// gsl_errno.h. Not sure if that's a bug in dpp.
+#include "gsl/gsl_vector.h"
+#include "gsl/gsl_multiroots.h"
+extern(C) {
+	int GSL_SUCCESS = 0;
+	int GSL_CONTINUE = -2;
+}
+
+import std.conv, std.stdio;
+
+struct rparams {
+    double a;
+    double b;
+}
+
+extern(C)
+int rosenbrock_f(const gsl_vector * x, void *params, gsl_vector * f) {
+  double a = (cast(rparams*) params).a;
+  double b = (cast(rparams*) params).b;
+
+  const double x0 = gsl_vector_get(x, 0);
+  const double x1 = gsl_vector_get(x, 1);
+
+  const double y0 = a * (1 - x0);
+  const double y1 = b * (x1 - x0 * x0);
+
+  gsl_vector_set(f, 0, y0);
+  gsl_vector_set(f, 1, y1);
+
+  return GSL_SUCCESS;
+}
+
+void print_state(size_t iter, gsl_multiroot_fsolver * s) {
+  writeln("iter = ", iter, " x = ", gsl_vector_get (s.x, 0),
+          " ", gsl_vector_get (s.x, 1),
+          " f(x) = ", gsl_vector_get (s.f, 0),
+          " ", gsl_vector_get (s.f, 1));
+}
+
+void main() {
+  const(gsl_multiroot_fsolver_type) * T;
+  gsl_multiroot_fsolver *s;
+
+  int status;
+  size_t i, iter = 0;
+
+  const(size_t) n = 2;
+  auto p = rparams(1.0, 10.0);
+  auto f = gsl_multiroot_function(&rosenbrock_f, n, &p);
+
+  double[] x_init = [-10.0, -5.0];
+  gsl_vector * x = gsl_vector_alloc(n);
+
+  gsl_vector_set(x, 0, x_init[0]);
+  gsl_vector_set(x, 1, x_init[1]);
+
+  T = gsl_multiroot_fsolver_hybrids;
+  s = gsl_multiroot_fsolver_alloc(T, 2);
+  gsl_multiroot_fsolver_set(s, &f, x);
+
+  print_state(iter, s);
+
+  do {
+    iter++;
+    status = gsl_multiroot_fsolver_iterate(s);
+
+    print_state (iter, s);
+
+    if (status) {   /* check if solver is stuck */
+      break;
+		}
+
+    status = gsl_multiroot_test_residual (s.f, 1e-7);
+  } while (status == GSL_CONTINUE && iter < 1000);
+
+  writeln("status = ", gsl_strerror(status).to!string);
+
+  gsl_multiroot_fsolver_free(s);
+  gsl_vector_free(x);
+}
